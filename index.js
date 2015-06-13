@@ -4,7 +4,7 @@
  * The trampoline. (Lots of inspiration taken from github.com/tj/co.)
  */
 
-function go(star, ...args) {
+function go(star, args) {
   return new Promise((resolve, reject) => {
     const gen = star.apply(null, args);
     gen.resolve = resolve;
