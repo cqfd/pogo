@@ -36,10 +36,9 @@ function next(gen, instr, done) {
   if (instr instanceof Take) return instr.ch.registerTaker({ gen: gen });
   if (instr instanceof Put) {
     const puter = { gen: gen };
-    return instr.ch.waitForTaker(puter).then(t => {
-      if (t.wasFirst) { resumeThem(); resumeUs(); } 
+    return instr.ch.waitForTaker(puter, (t, tWasFirst) => {
+      if (tWasFirst) { resumeThem(); resumeUs(); } 
       else { resumeUs(); resumeThem(); }
-
       function resumeUs() { bounce(gen); }
       function resumeThem() {
         if (t.alt) {
@@ -66,16 +65,20 @@ class Take {
   }
 }
 
-class Alts {
-  constructor(ops) {
-    this.ops = ops;
-    this.alive = true;
-  }
-}
-
 const put = (ch, val) => new Put(ch, val);
 const take = ch => new Take(ch);
-const alts = ops => new Alts(ops);
+const alts = ops => new Promise((resolve, reject) => {
+  let alive = true;
+  for (let op of ops) {
+    if (isPromise(op)) {
+      op.then(i => { if (alive) { alive = false; resolve(i); } },
+              e => { if (alive) { alive = false; reject(e); } });
+    } else if (op instanceof Unbuffered) {
+    } else if (op instanceof Take) {
+    } else if (op instanceof Put) {
+    }
+  }
+});
 
 const isPromise = x => typeof x.then === 'function';
 const isAlt = x => x.alts != undefined;
@@ -83,28 +86,21 @@ const isAlive = x => !isAlt(x) || x.alts.alive;
 const isGen = x => typeof x.next === 'function' && typeof x.throw === 'function';
 
 class Unbuffered {
-  /*
-   * taker: { gen, alts }
-   * puter: { gen, alts }
-   * puting: promise resolver
-   */
-
   constructor() {
     this.putings = [];
     this.takers = [];
   }
 
-  waitForTaker(puter) {
+  waitForTaker(puter, cb, eb) {
     this.takers = this.takers.filter(isAlive);
-    const takers = this.takers;
-    const putings = this.putings;
-    return new Promise((resolve, reject) => {
-      if (!isAlive(puter)) return reject();
-      if (!takers.length) return putings.push(resolve);
-      const taker = takers.shift();
-      taker.wasFirst = true;
-      resolve(taker);
-    });
+
+    if (!isAlive(puter)) return eb();
+    if (!this.takers.length) return this.putings.push(cb);
+
+    const taker = this.takers[0];
+    const takerWasFirst = true;
+
+    if (cb(taker, takerWasFirst)) this.takers.shift();
   }
 
   registerTaker(taker) {
