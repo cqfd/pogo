@@ -37,11 +37,11 @@ function next(gen, instr) {
   }
 
   if (instr instanceof Unbuffered) {
-    return instr.take(gen).then(i => bounce(gen, i), e => console.log("wtf", e));
+    return instr.take().then(i => bounce(gen, i), e => console.log("wtf", e));
   }
 
   if (instr instanceof Put) {
-    return instr.ch.put(gen, instr.val).then(() => bounce(gen), e => console.log("wtf", e));
+    return instr.ch.put(instr.val).then(() => bounce(gen), e => console.log("wtf", e));
   }
 
   gen.reject(new Error("Invalid instruction: " + instr + "."));
@@ -65,7 +65,7 @@ class Unbuffered {
     this.putings = [];
   }
 
-  put(puter, val) {
+  put(val) {
     const takings = this.takings;
     const putings = this.putings;
     return new Promise((resolve, reject) => {
@@ -78,7 +78,7 @@ class Unbuffered {
     });
   }
 
-  take(taker) {
+  take() {
     const takings = this.takings;
     const putings = this.putings;
     return new Promise((resolve, reject) => {
