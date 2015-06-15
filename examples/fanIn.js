@@ -1,6 +1,6 @@
 'use strict';
 
-const po = require('./index.js');
+const po = require('../index.js');
 const wtf = e => console.log("wtf", e);
 
 

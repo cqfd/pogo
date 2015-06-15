@@ -1,9 +1,9 @@
 'use strict';
 
-const csp = require("./index.js"),
+const csp = require("../index.js"),
       go = csp.go,
-      put = csp.put, 
-      take = csp.take, 
+      put = csp.put,
+      take = csp.take,
       alts = csp.alts;
 
 const sleep = ms => new Promise((yep, nope) => setTimeout(yep, ms));

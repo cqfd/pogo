@@ -2,7 +2,7 @@
 
 // http://talks.golang.org/2012/concurrency.slide#39
 // Daisy-chain
-const po = require("./index.js");
+const po = require("../index.js");
 
 function* chain(left, right) {
   yield po.put(left, 1 + (yield right));

@@ -1,6 +1,6 @@
 'use strict';
 
-const po = require('./index.js'),
+const po = require('../index.js'),
       put = po.put,
       sleep = ms => new Promise(yep => setTimeout(yep, ms));
 
