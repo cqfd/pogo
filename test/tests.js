@@ -48,11 +48,38 @@ describe("yielding a put or a take", () => {
   });
 });
 
-describe("yielding an alts of promises", () => {
-  it("works", () => {
+describe("alts", () => {
+  it("works with promises", () => {
     return po.go(function*() {
       const ret = yield po.alts([po.sleep(1000), Promise.resolve("woot")]);
       assert.equal(ret, "woot");
+    });
+  });
+
+  it("cancels slow alternatives", () => {
+    const log = [];
+    const ch1 = po.chan();
+    const ch2 = po.chan();
+
+    po.go(function*() {
+      yield po.alts([po.put(ch1, "first"), po.put(ch2, "second")]);
+      log.push("put first");
+      yield po.put(ch2, "deuxieme");
+      log.push("put deuxieme");
+    }).catch(wtf);
+
+    return po.go(function*() {
+      const r1 = yield po.alts([ch1, ch2]);
+      log.push("alted");
+      assert.equal(r1.channel, ch1);
+      assert.equal(r1.value, "first");
+
+      const r2 = yield po.alts([ch1, ch2]);
+      log.push("alted");
+      assert.equal(r2.channel, ch2);
+      assert.equal(r2.value, "deuxieme");
+
+      assert.deepEqual(log, ["put first", "alted", "put deuxieme", "alted"]);
     });
   });
 });
@@ -69,7 +96,7 @@ describe("yielding an alts", () => {
       log.push("put bar");
     });
     return po.go(function*() {
-      const foo = yield po.alts([fooChan]);
+      const foo = yield po.alts([fooChan, barChan]);
       log.push("alted");
       assert.equal(foo.value, "foo");
       assert.equal(foo.channel, fooChan);
@@ -137,8 +164,8 @@ describe("puting and taking from the same channel", () => {
   });
 });
 
-describe("whoever got there first", () => {
-  it("resumes first", () => {
+describe("fairness", () => {
+  it("works for a take and then a put", () => {
     const log = [];
     const ch = po.chan();
     po.go(function*() {
@@ -149,5 +176,18 @@ describe("whoever got there first", () => {
       yield po.put(ch);
       log.push("put");
     }).then(() => assert.deepEqual(log, ["took", "put"]));
+  });
+
+  it("works for a put and then a take", () => {
+    const log = [];
+    const ch = po.chan();
+    po.go(function*() {
+      yield po.put(ch);
+      log.push("put");
+    });
+    return po.go(function*() {
+      yield ch;
+      log.push("took");
+    }).then(() => assert.deepEqual(log, ["put", "took"]));
   });
 });
