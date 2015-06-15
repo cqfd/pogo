@@ -51,7 +51,7 @@ function next(gen, instr) {
       }
 
       if (op instanceof Put) {
-        op.ch.put(alt, instr.val).then(() => bounce(gen, { channel: op }), wtf);
+        op.ch.put(alt, op.val).then(() => bounce(gen, { channel: op }), wtf);
       }
     });
   }
@@ -100,6 +100,7 @@ class Unbuffered {
       }
       const taking = takings.shift();
       if (isAlt(taking.er)) taking.er.isLive = false;
+
       taking.resolve(val);
 
       if (isAlt(puter)) puter.isLive = false;
