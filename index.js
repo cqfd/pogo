@@ -1,7 +1,6 @@
 'use strict';
 
 const assert = require('assert');
-const wtf = e => console.log("wtf", e);
 
 function go(star, args) {
   return new Promise((resolve, reject) => {
@@ -33,10 +32,10 @@ function next(gen, instr) {
     return instr.then(i => bounce(gen, i), e => toss(gen, e));
   }
   if (instr instanceof Unbuffered) {
-    return instr.take(gen).then(i => bounce(gen, i), wtf);
+    return instr.take(gen).then(i => bounce(gen, i));
   }
   if (instr instanceof Put) {
-    return instr.ch.put(gen, instr.val).then(() => bounce(gen), wtf);
+    return instr.ch.put(gen, instr.val).then(() => bounce(gen));
   }
   if (instr instanceof Alts) {
     const alt = { isLive: true };
@@ -47,11 +46,11 @@ function next(gen, instr) {
       }
 
       if (op instanceof Unbuffered) {
-        op.take(alt).then(i => bounce(gen, { value: i, channel: op }), wtf);
+        op.take(alt).then(i => bounce(gen, { value: i, channel: op }));
       }
 
       if (op instanceof Put) {
-        op.ch.put(alt, op.val).then(() => bounce(gen, { channel: op }), wtf);
+        op.ch.put(alt, op.val).then(() => bounce(gen, { channel: op }));
       }
     });
   }
