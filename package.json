@@ -1,0 +1,13 @@
+{
+  "name": "po-go",
+  "version": "0.0.1",
+  "description": "ES6 generators plus promises and CSP channels.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/happy4crazy/po-go"
+  },
+  "devDependencies": {
+    "chai": "*",
+    "mocha": "*"
+  }
+}
