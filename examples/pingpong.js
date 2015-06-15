@@ -1,7 +1,8 @@
 'use strict';
 
-const po = require('../index.js'),
-      put = po.put,
+const pogo = require('../index.js'),
+      chan = pogo.chan,
+      put = pogo.put,
       sleep = ms => new Promise(yep => setTimeout(yep, ms));
 
 function* player(name, table) {
@@ -18,13 +19,13 @@ function* player(name, table) {
   }
 }
 
-po.go(function* () {
-  var table = po.chan();
+pogo(function* () {
+  var table = chan();
 
-  po.go(player, ["ping", table]).catch(e => console.log("ping wtf:", e));
-  po.go(player, ["pong", table]).catch(e => console.log("pong wtf:", e));
+  pogo(player, ["ping", table]).catch(e => console.log("ping wtf:", e));
+  pogo(player, ["pong", table]).catch(e => console.log("pong wtf:", e));
 
-  yield po.put(table, {hits: 0});
-  yield po.sleep(1000);
-  yield po.put(table, "deflated");
+  yield put(table, {hits: 0});
+  yield sleep(1000);
+  yield put(table, "deflated");
 }).catch(e => console.log("game wtf:", e));

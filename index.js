@@ -1,6 +1,8 @@
 'use strict';
 
-function go(star, args) {
+module.exports = pogo.pogo = pogo;
+
+function pogo(star, args) {
   return new Promise((resolve, reject) => {
     const gen = star.apply(null, args);
     gen.resolve = resolve;
@@ -62,14 +64,14 @@ class Put {
     this.val = val;
   }
 }
-const put = (ch, val) => new Put(ch, val);
+pogo.put = (ch, val) => new Put(ch, val);
 
 class Alts {
   constructor(ops) {
     this.ops = ops;
   }
 }
-const alts = ops => new Alts(ops);
+pogo.alts = ops => new Alts(ops);
 
 const isPromise = x => typeof x.then === 'function';
 const isAlt = x => x.isLive != undefined;
@@ -132,13 +134,4 @@ class Unbuffered {
   }
 }
 
-const chan = () => new Unbuffered();
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-module.exports = {
-  go: go,
-  put: put,
-  alts: alts,
-  sleep: sleep,
-  chan: chan
-};
+pogo.chan = () => new Unbuffered();

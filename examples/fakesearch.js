@@ -1,10 +1,9 @@
 'use strict';
 
-const csp = require("../index.js"),
-      go = csp.go,
-      put = csp.put,
-      take = csp.take,
-      alts = csp.alts;
+const pogo = require("../index.js"),
+      alts = pogo.alts,
+      chan = pogo.chan,
+      put = pogo.put;
 
 const sleep = ms => new Promise((yep, nope) => setTimeout(yep, ms));
 
@@ -23,26 +22,26 @@ var video1 = fakeSearch("video1");
 var video2 = fakeSearch("video2");
 
 function* first(query, replicas) {
-  const ch = new csp.Unbuffered();
+  const ch = chan();
   function* searchReplica(i) {
     yield put(ch, (yield* replicas[i](query)));
   }
   for (var i = 0; i < replicas.length; i++) {
-    go(searchReplica, [i]).catch(e => console.log("wtf", e));
+    pogo(searchReplica, [i]).catch(e => console.log("wtf", e));
   }
   return (yield ch);
 }
 
 function* google(query) {
-  var ch = new csp.Unbuffered();
+  var ch = chan();
 
-  go(function*() {
+  pogo(function*() {
     yield put(ch, (yield* first(query, [web1, web2])));
   }).catch(e => console.log("wtf", e));
-  go(function*() {
+  pogo(function*() {
     yield put(ch, (yield* first(query, [image1, image2])));
   }).catch(e => console.log("wtf", e));
-  go(function*() {
+  pogo(function*() {
     yield put(ch, (yield* first(query, [video1, video2])));
   }).catch(e => console.log("wtf", e));
 
@@ -62,7 +61,7 @@ function* google(query) {
   return results;
 }
 
-go(function*() {
+pogo(function*() {
   var start = new Date();
   var results = yield* google("PLT");
   var elapsed = new Date() - start;
