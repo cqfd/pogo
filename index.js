@@ -90,6 +90,8 @@ class Unbuffered {
     const takings = this.takings;
     const putings = this.putings;
     return new Promise((resolve, reject) => {
+      if (!isLive(puter)) return reject();
+
       if (!takings.length) {
         return putings.push({
           val: val,
@@ -98,9 +100,9 @@ class Unbuffered {
           reject: reject
         });
       }
+
       const taking = takings.shift();
       if (isAlt(taking.er)) taking.er.isLive = false;
-
       taking.resolve(val);
 
       if (isAlt(puter)) puter.isLive = false;
@@ -113,6 +115,8 @@ class Unbuffered {
     const takings = this.takings;
     const putings = this.putings;
     return new Promise((resolve, reject) => {
+      if (!isLive(taker)) return reject();
+
       if (!putings.length) {
         return takings.push({
           er: taker,
@@ -120,6 +124,7 @@ class Unbuffered {
           reject: reject,
         });
       }
+
       const puting = putings.shift();
       if (isAlt(puting.er)) puting.er.isLive = false;
       puting.resolve();
