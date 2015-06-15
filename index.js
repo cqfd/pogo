@@ -1,7 +1,5 @@
 'use strict';
 
-const assert = require('assert');
-
 function go(star, args) {
   return new Promise((resolve, reject) => {
     const gen = star.apply(null, args);
