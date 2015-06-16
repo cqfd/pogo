@@ -62,10 +62,6 @@ class Alts {
 }
 pogo.alts = ops => new Alts(ops);
 
-const isPromise = x => typeof x.then === 'function';
-const isAlt = x => x.isLive != undefined;
-const isLive = x => x.isLive || x.isLive === undefined;
-
 class Unbuffered {
 
   constructor() {
@@ -122,5 +118,8 @@ class Unbuffered {
     });
   }
 }
-
 pogo.chan = () => new Unbuffered();
+
+const isPromise = x => typeof x.then === 'function';
+const isAlt = x => x.isLive != undefined;
+const isLive = x => x.isLive || x.isLive === undefined;
