@@ -88,33 +88,6 @@ describe("alts", () => {
   });
 });
 
-describe("yielding an alts", () => {
-  it("works", () => {
-    const log = [];
-    const fooChan = chan();
-    const barChan = chan();
-    pogo(function*() {
-      yield put(fooChan, "foo");
-      log.push("put foo");
-      yield put(barChan, "bar");
-      log.push("put bar");
-    });
-    return pogo(function*() {
-      const foo = yield alts([fooChan, barChan]);
-      log.push("alted");
-      assert.equal(foo.value, "foo");
-      assert.equal(foo.channel, fooChan);
-
-      const bar = yield alts([barChan, fooChan]);
-      log.push("alted");
-      assert.equal(bar.value, "bar");
-      assert.equal(bar.channel, barChan);
-
-      assert.deepEqual(log, ["put foo", "alted", "put bar", "alted"]);
-    });
-  });
-});
-
 describe("sharing a channel between multiple pogos", () => {
   it("works", () => {
     const log = [];
