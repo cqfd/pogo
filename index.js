@@ -70,7 +70,7 @@ class Unbuffered {
   }
 
   put(puter, val) {
-    this.takings = this.takings.filter(t => isLive(t.er));
+    this.takings = this.takings.filter(t => isLive(t.taker));
     const takings = this.takings;
     const putings = this.putings;
     return new Promise((resolve, reject) => {
@@ -79,14 +79,14 @@ class Unbuffered {
       if (!takings.length) {
         return putings.push({
           val: val,
-          er: puter,
+          puter: puter,
           resolve: resolve,
           reject: reject
         });
       }
 
       const taking = takings.shift();
-      if (isAlt(taking.er)) taking.er.isLive = false;
+      if (isAlt(taking.taker)) taking.taker.isLive = false;
       taking.resolve(val);
 
       if (isAlt(puter)) puter.isLive = false;
@@ -95,7 +95,7 @@ class Unbuffered {
   }
 
   take(taker) {
-    this.putings = this.putings.filter(p => isLive(p.er));
+    this.putings = this.putings.filter(p => isLive(p.puter));
     const takings = this.takings;
     const putings = this.putings;
     return new Promise((resolve, reject) => {
@@ -103,14 +103,14 @@ class Unbuffered {
 
       if (!putings.length) {
         return takings.push({
-          er: taker,
+          taker: taker,
           resolve: resolve,
           reject: reject,
         });
       }
 
       const puting = putings.shift();
-      if (isAlt(puting.er)) puting.er.isLive = false;
+      if (isAlt(puting.puter)) puting.puter.isLive = false;
       puting.resolve();
 
       if (isAlt(taker)) taker.isLive = false;
