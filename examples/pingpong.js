@@ -20,7 +20,7 @@ function* player(name, table) {
 }
 
 pogo(function* () {
-  var table = chan();
+  const table = chan();
 
   pogo(player, ["ping", table]).catch(e => console.log("ping wtf:", e));
   pogo(player, ["pong", table]).catch(e => console.log("pong wtf:", e));
