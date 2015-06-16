@@ -3,59 +3,48 @@
 module.exports = pogo.pogo = pogo;
 
 function pogo(star, args) {
+  const gen = star.apply(null, args);
   return new Promise((resolve, reject) => {
-    const gen = star.apply(null, args);
-    gen.resolve = resolve;
-    gen.reject = reject;
-    bounce(gen);
+    bounce();
+
+    function bounce(input) {
+      let output;
+      try { output = gen.next(input); }
+      catch (e) { return reject(e); }
+      if (output.done) return resolve(output.value);
+      next(output.value);
+    }
+
+    function toss(error) {
+      let output;
+      try { output = gen.throw(error); }
+      catch (e) { return reject(e); }
+      if (output.done) return resolve(output.value);
+      next(output.value);
+    }
+
+    function next(instr) {
+      if (isPromise(instr)) return instr.then(bounce, toss);
+      if (instr instanceof Unbuffered) return instr.take(gen).then(bounce);
+      if (instr instanceof Put) return instr.ch.put(gen, instr.val).then(bounce);
+      if (instr instanceof Alts) {
+        const alt = { isLive: true };
+        return instr.ops.forEach(op => {
+          if (isPromise(op)) {
+            op.then(i => { if (alt.isLive) { alt.isLive = false; bounce(i); } },
+                    e => { if (alt.isLive) { alt.isLive = false; toss(e); } });
+          }
+          if (op instanceof Unbuffered) {
+            op.take(alt).then(i => bounce({ value: i, channel: op }));
+          }
+          if (op instanceof Put) {
+            op.ch.put(alt, op.val).then(() => bounce({ channel: op }));
+          }
+        });
+      }
+      reject(new Error("Invalid yield instruction: " + instr + "."));
+    }
   });
-}
-
-function bounce(gen, input) {
-  let output;
-  try { output = gen.next(input); }
-  catch (e) { return gen.reject(e); }
-  if (output.done) return gen.resolve(output.value);
-  next(gen, output.value);
-}
-
-function toss(gen, error) {
-  let output;
-  try { output = gen.throw(error); }
-  catch (e) { return gen.reject(e); }
-  if (output.done) return gen.resolve(output.value);
-  next(gen, output.value);
-}
-
-function next(gen, instr) {
-  if (isPromise(instr)) {
-    return instr.then(i => bounce(gen, i), e => toss(gen, e));
-  }
-  if (instr instanceof Unbuffered) {
-    return instr.take(gen).then(i => bounce(gen, i));
-  }
-  if (instr instanceof Put) {
-    return instr.ch.put(gen, instr.val).then(() => bounce(gen));
-  }
-  if (instr instanceof Alts) {
-    const alt = { isLive: true };
-    return instr.ops.forEach(op => {
-      if (isPromise(op)) {
-        op.then(i => { if (alt.isLive) { alt.isLive = false; bounce(gen, i); } },
-                e => { if (alt.isLive) { alt.isLive = false; toss(gen, e); } });
-      }
-
-      if (op instanceof Unbuffered) {
-        op.take(alt).then(i => bounce(gen, { value: i, channel: op }));
-      }
-
-      if (op instanceof Put) {
-        op.ch.put(alt, op.val).then(() => bounce(gen, { channel: op }));
-      }
-    });
-  }
-
-  gen.reject(new Error("Invalid yield instruction: " + instr + "."));
 }
 
 class Put {
