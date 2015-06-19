@@ -88,6 +88,31 @@ describe("alts", () => {
   });
 });
 
+describe("yielding a generator function", () => {
+  it("works", () => {
+    function* example(ch) {
+      const x = yield Promise.resolve(123);
+
+      let y;
+      try { yield Promise.reject("bang!"); }
+      catch (e) { y = 456; }
+
+      const z = yield ch;
+
+      return [x, y, z];
+    }
+
+    return pogo(function*() {
+      const ch = chan();
+      pogo(function*() {
+        yield put(ch, "sup");
+      });
+
+      assert.deepEqual(yield example(ch), [123, 456, "sup"]);
+    });
+  });
+});
+
 describe("sharing a channel between multiple pogos", () => {
   it("works", () => {
     const log = [];

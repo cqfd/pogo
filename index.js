@@ -3,7 +3,7 @@
 module.exports = pogo.pogo = pogo;
 
 function pogo(star, args) {
-  const gen = star.apply(null, args);
+  const gen = isGen(star) ? star : star.apply(null, args);
   return new Promise((resolve, reject) => {
     bounce();
 
@@ -40,8 +40,11 @@ function pogo(star, args) {
           if (op instanceof Put) {
             op.ch.put(alt, op.val).then(() => bounce({ channel: op }));
           }
+          if (isGen(op)) {
+          }
         });
       }
+      if (isGen(instr)) return pogo(instr).then(bounce, toss);
       reject(new Error("Invalid yield instruction: " + instr + "."));
     }
   });
@@ -121,5 +124,6 @@ class Unbuffered {
 pogo.chan = () => new Unbuffered();
 
 const isPromise = x => typeof x.then === 'function';
+const isGen = x => typeof x.next === 'function' && typeof x.throw === 'function';
 const isAlt = x => x.isLive != undefined;
 const isLive = x => x.isLive || x.isLive === undefined;
