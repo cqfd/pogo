@@ -74,13 +74,11 @@ class Unbuffered {
 
   put(puter, val) {
     this.takings = this.takings.filter(t => isLive(t.taker));
-    const takings = this.takings;
-    const putings = this.putings;
     return new Promise((resolve, reject) => {
       if (!isLive(puter)) return reject();
 
-      if (!takings.length) {
-        return putings.push({
+      if (!this.takings.length) {
+        return this.putings.push({
           val: val,
           puter: puter,
           resolve: resolve,
@@ -88,7 +86,7 @@ class Unbuffered {
         });
       }
 
-      const taking = takings.shift();
+      const taking = this.takings.shift();
       if (isAlt(taking.taker)) taking.taker.isLive = false;
       taking.resolve(val);
 
@@ -97,28 +95,60 @@ class Unbuffered {
     });
   }
 
+  putAsync(val, cb) {
+    const resolve = cb || (() => {});
+    this.takings = this.takings.filter(t => isLive(t.taker));
+
+    if (!this.takings.length) {
+      return this.putings.push({
+        val: val,
+        puter: 'async',
+        resolve: resolve
+      });
+    }
+
+    const taking = this.takings.shift();
+    if (isAlt(taking.taker)) taking.taker.isLive = false;
+    taking.resolve(val);
+
+    resolve();
+  }
+
   take(taker) {
     this.putings = this.putings.filter(p => isLive(p.puter));
-    const takings = this.takings;
-    const putings = this.putings;
     return new Promise((resolve, reject) => {
       if (!isLive(taker)) return reject();
 
-      if (!putings.length) {
-        return takings.push({
+      if (!this.putings.length) {
+        return this.takings.push({
           taker: taker,
           resolve: resolve,
           reject: reject,
         });
       }
 
-      const puting = putings.shift();
+      const puting = this.putings.shift();
       if (isAlt(puting.puter)) puting.puter.isLive = false;
       puting.resolve();
 
       if (isAlt(taker)) taker.isLive = false;
       resolve(puting.val);
     });
+  }
+
+  takeAsync(cb) {
+    const resolve = cb || (() => {});
+    this.putings = this.putings.filter(p => isLive(p.puter));
+
+    if (!this.putings.length) {
+      return this.takings.push({ taker: 'async', resolve: resolve });
+    }
+
+    const puting = this.putings.shift();
+    if (isAlt(puting.puter)) puting.puter.isLive = false;
+    puting.resolve();
+
+    resolve(puting.val);
   }
 }
 pogo.chan = () => new Unbuffered();

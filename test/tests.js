@@ -113,6 +113,31 @@ describe("yielding a generator function", () => {
   });
 });
 
+describe("async/callback-based interface", () => {
+  describe("putAsync", () => {
+    it("works", (done) => {
+      const ch = chan();
+      pogo(function*() {
+        assert.equal(yield ch, 123);
+      });
+      ch.putAsync(123, done);
+    });
+  });
+
+  describe("takeAsync", () => {
+    it("works", (done) => {
+      const ch = chan();
+      pogo(function*() {
+        yield put(ch, 123);
+      });
+      ch.takeAsync(v => {
+        assert.equal(v, 123);
+        return done();
+      });
+    });
+  });
+});
+
 describe("sharing a channel between multiple pogos", () => {
   it("works", () => {
     const log = [];

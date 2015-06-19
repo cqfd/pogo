@@ -1,13 +1,21 @@
 {
   "name": "po-go",
   "version": "0.0.1",
-  "description": "ES6 generators plus promises and CSP channels.",
+  "author": "Alan O'Donnell <alan.m.odonnell@gmail.com>",
+  "description": "ES6 generators, promises, and CSP channels.",
+  "keywords": [ "es6", "generators", "promises", "csp" ],
   "repository": {
     "type": "git",
     "url": "https://github.com/happy4crazy/po-go"
   },
   "devDependencies": {
     "chai": "*",
-    "mocha": "*"
-  }
+    "mocha": "*",
+    "babel": "*",
+    "babel-runtime": "*"
+  },
+  "scripts": {
+    "test": "mocha --compilers js:babel/register"
+  },
+  "license": "MIT"
 }
