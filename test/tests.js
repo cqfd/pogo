@@ -6,7 +6,7 @@ const pogo = require('../index.js'),
       chan = pogo.chan,
       put = pogo.put;
 const wtf = x => console.log("wtf", x);
-const sleep = ms => new Promise(yep => setTimeout(yep, ms));
+const sleep = ms => new Promise(awaken => setTimeout(awaken, ms));
 
 describe("returning a value", () => {
   it("resolves the pogo's promise", () => {
