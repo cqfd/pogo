@@ -12,7 +12,7 @@ function pogo(star, args) {
       try { output = gen.next(input); }
       catch (e) { return reject(e); }
       if (output.done) return resolve(output.value);
-      next(output.value);
+      decode(output.value);
     }
 
     function toss(error) {
@@ -20,10 +20,10 @@ function pogo(star, args) {
       try { output = gen.throw(error); }
       catch (e) { return reject(e); }
       if (output.done) return resolve(output.value);
-      next(output.value);
+      decode(output.value);
     }
 
-    function next(instr) {
+    function decode(instr) {
       if (isPromise(instr)) return instr.then(bounce, toss);
       if (instr instanceof Unbuffered) return instr.take(gen).then(bounce);
       if (instr instanceof Put) return instr.ch.put(gen, instr.val).then(bounce);
