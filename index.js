@@ -41,6 +41,8 @@ function pogo(star, args) {
             op.ch.put(alt, op.val).then(() => bounce({ channel: op }));
           }
           if (isGen(op)) {
+            pogo(op).then(i => { if (alt.isLive) { alt.isLive = false; bounce(i) } },
+                          e => { if (alt.isLive) { alt.isLive = false; throw(e) } });
           }
         });
       }
