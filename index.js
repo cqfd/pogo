@@ -42,7 +42,7 @@ function pogo(star, args) {
           }
           if (isGen(op)) {
             pogo(op).then(i => { if (alt.isLive) { alt.isLive = false; bounce(i) } },
-                          e => { if (alt.isLive) { alt.isLive = false; throw(e) } });
+                          e => { if (alt.isLive) { alt.isLive = false; toss(e) } });
           }
         });
       }
