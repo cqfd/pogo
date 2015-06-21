@@ -1,6 +1,6 @@
 {
   "name": "po-go",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Alan O'Donnell <alan.m.odonnell@gmail.com>",
   "description": "ES6 generators, promises, and CSP channels.",
   "keywords": [ "es6", "generators", "promises", "csp" ],
