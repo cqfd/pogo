@@ -111,6 +111,20 @@ describe("yielding a generator function", () => {
       assert.deepEqual(yield example(ch), [123, 456, "sup"]);
     });
   });
+
+  it("is safe even if you yield the same generator multiple times", () => {
+    function* star(x) {
+      const y = yield Promise.resolve("foo");
+      const z = yield Promise.resolve("bar");
+      return [x, y, z];
+    }
+    return pogo(function*() {
+      const gen = star(123);
+      assert.equal(123, yield alts([gen, Promise.resolve(123)]));
+      assert.equal(456, yield alts([gen, Promise.resolve(456)]));
+      assert.deepEqual(yield alts([gen, Promise.resolve(789)]), [123, "foo", "bar"]);
+    });
+  });
 });
 
 describe("async/callback-based interface", () => {

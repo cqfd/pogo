@@ -1,8 +1,8 @@
 'use strict';
 
-module.exports = pogo.pogo = pogo;
+const promiseFor = new WeakMap();
 
-function pogo(star, args) {
+export default function pogo(star, args) {
   const gen = isGen(star) ? star : star.apply(null, args);
   return new Promise((resolve, reject) => {
     bounce();
@@ -41,12 +41,16 @@ function pogo(star, args) {
             op.ch.put(alt, op.val).then(() => bounce({ channel: op }));
           }
           if (isGen(op)) {
-            pogo(op).then(i => { if (alt.isLive) { alt.isLive = false; bounce(i) } },
-                          e => { if (alt.isLive) { alt.isLive = false; toss(e) } });
+            if (!promiseFor.has(op)) promiseFor.set(op, pogo(op));
+            promiseFor.get(op).then(i => { if (alt.isLive) { alt.isLive = false; bounce(i) } },
+                                    e => { if (alt.isLive) { alt.isLive = false; toss(e) } });
           }
         });
       }
-      if (isGen(instr)) return pogo(instr).then(bounce, toss);
+      if (isGen(instr)) {
+        if (!promiseFor.has(instr)) promiseFor.set(instr, pogo(instr));
+        return promiseFor.get(instr).then(bounce, toss);
+      }
       reject(new Error("Invalid yield instruction: " + instr + "."));
     }
   });
