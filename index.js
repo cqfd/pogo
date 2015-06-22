@@ -4,26 +4,16 @@ const promiseFor = new WeakMap();
 
 export default function pogo(star, args) {
   const gen = isGen(star) ? star : star.apply(null, args);
-  return new Promise((resolve, reject) => {
+  return new Promise((ok, notOk) => {
     bounce();
 
-    function bounce(input) {
-      let output;
-      try { output = gen.next(input); }
-      catch (e) { return reject(e); }
-      if (output.done) return resolve(output.value);
-      decode(output.value);
-    }
+    function bounce(input) { decode(gen.next(input)) }
+    function toss(error) { decode(gen.throw(error)) }
 
-    function toss(error) {
-      let output;
-      try { output = gen.throw(error); }
-      catch (e) { return reject(e); }
-      if (output.done) return resolve(output.value);
-      decode(output.value);
-    }
+    function decode(output) {
+      if (output.done) return ok(output.value);
 
-    function decode(instr) {
+      const instr = output.value;
       if (isPromise(instr)) return instr.then(bounce, toss);
       if (instr instanceof Unbuffered) return instr.take(gen).then(bounce);
       if (instr instanceof Put) return instr.ch.put(gen, instr.val).then(bounce);
@@ -51,7 +41,7 @@ export default function pogo(star, args) {
         if (!promiseFor.has(instr)) promiseFor.set(instr, pogo(instr));
         return promiseFor.get(instr).then(bounce, toss);
       }
-      reject(new Error("Invalid yield instruction: " + instr + "."));
+      notOk(new Error("Invalid yield instruction: " + instr + "."));
     }
   });
 }
