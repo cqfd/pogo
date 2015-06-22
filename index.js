@@ -41,6 +41,7 @@ export default function pogo(star, args) {
         if (!promiseFor.has(instr)) promiseFor.set(instr, pogo(instr));
         return promiseFor.get(instr).then(bounce, toss);
       }
+
       notOk(new Error("Invalid yield instruction: " + instr + "."));
     }
   });
