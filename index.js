@@ -101,7 +101,8 @@ class Channel {
   }
   _handoff(doer, ok, partners, val) {
     const partner = partners.shift()
-    this._resume(partner, val)
+    if (partner.doer.finished !== undefined) partner.doer.finished = true
+    partner.ok(val)
     if (doer.finished !== undefined) doer.finished = true
     ok(partner.val)
   }
@@ -115,10 +116,6 @@ class Channel {
       if (p.doer.finished) p.notOk()
     }
     this.putings = this.putings.filter(p => !p.doer.finished)
-  }
-  _resume(doing, val) {
-    if (doing.doer.finished !== undefined) doing.doer.finished = true
-    doing.ok(val)
   }
 }
 pogo.chan = () => new Channel()
