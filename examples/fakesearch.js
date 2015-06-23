@@ -1,7 +1,7 @@
 'use strict';
 
 const pogo = require("../index.js"),
-      alts = pogo.alts,
+      race = pogo.race,
       chan = pogo.chan,
       put = pogo.put;
 
@@ -49,7 +49,7 @@ function* google(query) {
 
   var results = [];
   for (var i = 0; i < 3; i++) {
-    var r = yield alts([ch, t.then(() => "zzz")]);
+    var r = yield race([ch, t.then(() => "zzz")]);
     if (r.channel) {
       results.push(r.value);
     } else {

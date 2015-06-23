@@ -21,7 +21,7 @@ function fanIn(in1, in2) {
   const ch = pogo.chan();
   pogo(function*() {
     for (;;) {
-      const r = yield pogo.alts([in1, in2]);
+      const r = yield pogo.race([in1, in2]);
       yield pogo.put(ch, r.value);
     }
   }).catch(e => console.log("fanIn wtf", e));

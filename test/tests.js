@@ -2,7 +2,7 @@
 
 const assert = require("chai").assert;
 const pogo = require('../index.js'),
-      alts = pogo.alts,
+      race = pogo.race,
       chan = pogo.chan,
       put = pogo.put;
 const wtf = x => console.log("wtf", x);
@@ -52,10 +52,10 @@ describe("yielding a put or a take", () => {
   });
 });
 
-describe("alts", () => {
+describe("race", () => {
   it("works with promises", () => {
     return pogo(function*() {
-      const ret = yield alts([sleep(1000), Promise.resolve("woot")]);
+      const ret = yield race([sleep(1000), Promise.resolve("woot")]);
       assert.equal(ret, "woot");
     });
   });
@@ -66,19 +66,19 @@ describe("alts", () => {
     const ch2 = chan();
 
     pogo(function*() {
-      yield alts([put(ch1, "first"), put(ch2, "second")]);
+      yield race([put(ch1, "first"), put(ch2, "second")]);
       log.push("put first");
       yield put(ch2, "deuxieme");
       log.push("put deuxieme");
     }).catch(wtf);
 
     return pogo(function*() {
-      const r1 = yield alts([ch1, ch2]);
+      const r1 = yield race([ch1, ch2]);
       log.push("alted");
       assert.equal(r1.channel, ch1);
       assert.equal(r1.value, "first");
 
-      const r2 = yield alts([ch1, ch2]);
+      const r2 = yield race([ch1, ch2]);
       log.push("alted");
       assert.equal(r2.channel, ch2);
       assert.equal(r2.value, "deuxieme");
@@ -120,9 +120,9 @@ describe("yielding a generator function", () => {
     }
     return pogo(function*() {
       const gen = star(123);
-      assert.equal(123, yield alts([gen, Promise.resolve(123)]));
-      assert.equal(456, yield alts([gen, Promise.resolve(456)]));
-      assert.deepEqual(yield alts([gen, Promise.resolve(789)]), [123, "foo", "bar"]);
+      assert.equal(123, yield race([gen, Promise.resolve(123)]));
+      assert.equal(456, yield race([gen, Promise.resolve(456)]));
+      assert.deepEqual(yield race([gen, Promise.resolve(789)]), [123, "foo", "bar"]);
     });
   });
 });
