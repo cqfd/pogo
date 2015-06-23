@@ -14,7 +14,7 @@ export default function pogo(star, args) {
 
       const instr = output.value
       if (isPromise(instr)) return instr.then(bounce, toss)
-      if (instr instanceof Unbuffered) return instr.take(gen).then(bounce)
+      if (instr instanceof Channel) return instr.take(gen).then(bounce)
       if (instr instanceof Put) return instr.ch.put(gen, instr.val).then(bounce)
       if (instr instanceof Race) {
         const race = { finished: false }
@@ -23,7 +23,7 @@ export default function pogo(star, args) {
             op.then(i => { if (!race.finished) { race.finished = true; bounce(i) } },
                     e => { if (!race.finished) { race.finished = true; toss(e) } })
           }
-          if (op instanceof Unbuffered) {
+          if (op instanceof Channel) {
             op.take(race).then(i => bounce({ value: i, channel: op }))
           }
           if (op instanceof Put) {
@@ -64,7 +64,7 @@ class Race {
 }
 pogo.race = ops => new Race(ops)
 
-class Unbuffered {
+class Channel {
 
   constructor() {
     this.takings = []
@@ -128,7 +128,7 @@ class Unbuffered {
     doing.ok(val)
   }
 }
-pogo.chan = () => new Unbuffered()
+pogo.chan = () => new Channel()
 
 const isPromise = x => typeof x.then === 'function'
 const isGen = x => typeof x.next === 'function' && typeof x.throw === 'function'
