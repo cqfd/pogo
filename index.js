@@ -72,29 +72,29 @@ class Channel {
 
   put(puter, val) {
     this._disqualifySlowRacers()
-    return this._op(puter, this.putings, this.takings, val)
+    return this._promise(puter, this.putings, this.takings, val)
   }
   putAsync(val, cb) {
     this._disqualifySlowRacers()
-    this._opAsync(this.putings, this.takings, cb, val)
+    this._async(this.putings, this.takings, cb, val)
   }
   take(taker) {
     this._disqualifySlowRacers()
-    return this._op(taker, this.takings, this.putings)
+    return this._promise(taker, this.takings, this.putings)
   }
   takeAsync(cb) {
     this._disqualifySlowRacers()
-    this._opAsync(this.takings, this.putings, cb)
+    this._async(this.takings, this.putings, cb)
   }
 
-  _op(doer, doers, partners, val) {
+  _promise(doer, doers, partners, val) {
     return new Promise((ok, notOk) => {
       if (doer.finished) return notOk()
       if (!partners.length) return doers.push({doer, ok, notOk, val})
       this._handoff(doer, ok, partners, val)
     })
   }
-  _opAsync(doers, partners, cb, val) {
+  _async(doers, partners, cb, val) {
     const ok = cb || (() => {})
     if (!partners.length) return this.doers.push({doer: 'async', ok, val})
     this._handoff('async', ok, partners, val)
