@@ -65,52 +65,45 @@ class Race {
 pogo.race = ops => new Race(ops)
 
 class Channel {
-
   constructor() {
     this.takings = []
     this.putings = []
   }
 
-  put(doer, val) {
+  put(puter, val) {
     this._disqualifySlowRacers()
-    return new Promise((ok, notOk) => {
-      if (doer.finished) return notOk()
-      if (!this.takings.length) return this.putings.push({val, doer, ok, notOk})
-      const taking = this.takings.shift()
-      this._resume(taking, val)
-      if (doer.finished !== undefined) doer.finished = true
-      ok()
-    })
+    return this._op(puter, this.putings, this.takings, val)
   }
-
   putAsync(val, cb) {
     this._disqualifySlowRacers()
-    const ok = cb || (() => {})
-    if (!this.takings.length) return this.putings.push({val, doer: 'async', ok})
-    const taking = this.takings.shift()
-    this._resume(taking, val)
-    ok()
+    this._opAsync(this.putings, this.takings, cb, val)
   }
-
-  take(doer) {
+  take(taker) {
     this._disqualifySlowRacers()
-    return new Promise((ok, notOk) => {
-      if (doer.finished) return notOk()
-      if (!this.putings.length) return this.takings.push({doer, ok, notOk})
-      const puting = this.putings.shift()
-      this._resume(puting)
-      if (doer.finished !== undefined) doer.finished = true
-      ok(puting.val)
-    })
+    return this._op(taker, this.takings, this.putings)
   }
-
   takeAsync(cb) {
     this._disqualifySlowRacers()
+    this._opAsync(this.takings, this.putings, cb)
+  }
+
+  _op(doer, doers, partners, val) {
+    return new Promise((ok, notOk) => {
+      if (doer.finished) return notOk()
+      if (!partners.length) return doers.push({doer, ok, notOk, val})
+      this._handoff(doer, ok, partners, val)
+    })
+  }
+  _opAsync(doers, partners, cb, val) {
     const ok = cb || (() => {})
-    if (!this.putings.length) return this.takings.push({doer: 'async', ok})
-    const puting = this.putings.shift()
-    this._resume(puting)
-    ok(puting.val)
+    if (!partners.length) return this.doers.push({doer: 'async', ok, val})
+    this._handoff('async', ok, partners, val)
+  }
+  _handoff(doer, ok, partners, val) {
+    const partner = partners.shift()
+    this._resume(partner, val)
+    if (doer.finished !== undefined) doer.finished = true
+    ok(partner.val)
   }
 
   _disqualifySlowRacers() {
