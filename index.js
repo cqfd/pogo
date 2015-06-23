@@ -75,7 +75,7 @@ class Unbuffered {
     return new Promise((ok, notOk) => {
       if (puter.finished) return notOk()
 
-      this.takings = this.takings.filter(t => !t.taker.finished)
+      this._sweep()
       if (!this.takings.length) return this.putings.push({val, puter, ok, notOk})
 
       const taking = this.takings.shift()
@@ -89,7 +89,7 @@ class Unbuffered {
 
   putAsync(val, cb) {
     const ok = cb || (() => {})
-    this.takings = this.takings.filter(t => !t.taker.finished)
+    this._sweep()
 
     if (!this.takings.length) return this.putings.push({val, puter: 'async', ok})
 
@@ -102,7 +102,7 @@ class Unbuffered {
 
   take(taker) {
     return new Promise((ok, notOk) => {
-      this.putings = this.putings.filter(p => !p.puter.finished)
+      this._sweep()
       if (taker.finished) return notOk()
 
       if (!this.putings.length) return this.takings.push({taker, ok, notOk})
@@ -118,7 +118,7 @@ class Unbuffered {
 
   takeAsync(cb) {
     const ok = cb || (() => {})
-    this.putings = this.putings.filter(p => !p.puter.finished)
+    this._sweep()
 
     if (!this.putings.length) return this.takings.push({taker: 'async', ok})
 
@@ -128,6 +128,18 @@ class Unbuffered {
 
     ok(puting.val)
   }
+
+  _sweep() {
+    for (let t of this.takings) {
+      if (t.taker.finished) t.notOk()
+    }
+    this.takings = this.takings.filter(t => !t.taker.finished)
+    for (let p of this.putings) {
+      if (p.puter.finished) p.notOk()
+    }
+    this.putings = this.putings.filter(p => !p.puter.finished)
+  }
+
 }
 pogo.chan = () => new Unbuffered()
 
