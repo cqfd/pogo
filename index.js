@@ -71,75 +71,62 @@ class Unbuffered {
     this.putings = []
   }
 
-  put(puter, val) {
+  put(doer, val) {
+    this._disqualifySlowRacers()
     return new Promise((ok, notOk) => {
-      if (puter.finished) return notOk()
-
-      this._sweep()
-      if (!this.takings.length) return this.putings.push({val, puter, ok, notOk})
-
+      if (doer.finished) return notOk()
+      if (!this.takings.length) return this.putings.push({val, doer, ok, notOk})
       const taking = this.takings.shift()
-      if (taking.taker.finished !== undefined) taking.taker.finished = true
-      taking.ok(val)
-
-      if (puter.finished !== undefined) puter.finished = true
+      this._resume(taking, val)
+      if (doer.finished !== undefined) doer.finished = true
       ok()
     })
   }
 
   putAsync(val, cb) {
+    this._disqualifySlowRacers()
     const ok = cb || (() => {})
-    this._sweep()
-
-    if (!this.takings.length) return this.putings.push({val, puter: 'async', ok})
-
+    if (!this.takings.length) return this.putings.push({val, doer: 'async', ok})
     const taking = this.takings.shift()
-    if (taking.taker.finished !== undefined) taking.taker.finished = true
-    taking.ok(val)
-
+    this._resume(taking, val)
     ok()
   }
 
-  take(taker) {
+  take(doer) {
+    this._disqualifySlowRacers()
     return new Promise((ok, notOk) => {
-      this._sweep()
-      if (taker.finished) return notOk()
-
-      if (!this.putings.length) return this.takings.push({taker, ok, notOk})
-
+      if (doer.finished) return notOk()
+      if (!this.putings.length) return this.takings.push({doer, ok, notOk})
       const puting = this.putings.shift()
-      if (puting.puter.finished !== undefined) puting.puter.finished = true
-      puting.ok()
-
-      if (taker.finished !== undefined) taker.finished = true
+      this._resume(puting)
+      if (doer.finished !== undefined) doer.finished = true
       ok(puting.val)
     })
   }
 
   takeAsync(cb) {
+    this._disqualifySlowRacers()
     const ok = cb || (() => {})
-    this._sweep()
-
-    if (!this.putings.length) return this.takings.push({taker: 'async', ok})
-
+    if (!this.putings.length) return this.takings.push({doer: 'async', ok})
     const puting = this.putings.shift()
-    if (puting.puter.finished !== undefined) puting.puter.finished = true
-    puting.ok()
-
+    this._resume(puting)
     ok(puting.val)
   }
 
-  _sweep() {
+  _disqualifySlowRacers() {
     for (let t of this.takings) {
-      if (t.taker.finished) t.notOk()
+      if (t.doer.finished) t.notOk()
     }
-    this.takings = this.takings.filter(t => !t.taker.finished)
+    this.takings = this.takings.filter(t => !t.doer.finished)
     for (let p of this.putings) {
-      if (p.puter.finished) p.notOk()
+      if (p.doer.finished) p.notOk()
     }
-    this.putings = this.putings.filter(p => !p.puter.finished)
+    this.putings = this.putings.filter(p => !p.doer.finished)
   }
-
+  _resume(doing, val) {
+    if (doing.doer.finished !== undefined) doing.doer.finished = true
+    doing.ok(val)
+  }
 }
 pogo.chan = () => new Unbuffered()
 
