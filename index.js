@@ -72,38 +72,37 @@ class Channel {
 
   put(puter, val) {
     this._disqualifySlowRacers()
-    return this._promise(puter, this.putings, this.takings, val)
+    return this._tradePromise(puter, this.takings, this.putings, val)
   }
   putAsync(val, cb) {
     this._disqualifySlowRacers()
-    this._async(this.putings, this.takings, cb, val)
+    this._tradeAsync(this.takings, this.putings, cb, val)
   }
   take(taker) {
     this._disqualifySlowRacers()
-    return this._promise(taker, this.takings, this.putings)
+    return this._tradePromise(taker, this.putings, this.takings)
   }
   takeAsync(cb) {
     this._disqualifySlowRacers()
-    this._async(this.takings, this.putings, cb)
+    this._tradeAsync(this.putings, this.takings, cb)
   }
 
-  _promise(doer, doers, partners, val) {
+  _tradePromise(us, them, queue, val) {
     return new Promise((ok, notOk) => {
-      if (doer.finished) return notOk()
-      if (!partners.length) return doers.push({doer, ok, notOk, val})
-      this._handoff(doer, ok, partners, val)
+      if (us.finished) return notOk()
+      if (!them.length) return queue.push({doer: us, ok, notOk, val})
+      this._exchange(us, them, ok, val)
     })
   }
-  _async(doers, partners, cb, val) {
-    const ok = cb || (() => {})
-    if (!partners.length) return this.doers.push({doer: 'async', ok, val})
-    this._handoff('async', ok, partners, val)
+  _tradeAsync(them, queue, ok = (() => {}), val) {
+    if (!them.length) return queue.push({doer: 'async', ok, val})
+    this._exchange('async', them, ok, val)
   }
-  _handoff(doer, ok, partners, val) {
-    const partner = partners.shift()
+  _exchange(us, them, ok, val) {
+    const partner = them.shift()
     if (partner.doer.finished !== undefined) partner.doer.finished = true
     partner.ok(val)
-    if (doer.finished !== undefined) doer.finished = true
+    if (us.finished !== undefined) us.finished = true
     ok(partner.val)
   }
 
