@@ -1,7 +1,7 @@
 'use strict';
 
 import { assert } from 'chai'
-import pogo, { chan, put, race } from '../index.js'
+import pogo, { chan, put, race, strictBuffer } from '../index.js'
 
 const wtf = x => console.log('wtf', x)
 const sleep = ms => new Promise(awaken => setTimeout(awaken, ms))
@@ -244,4 +244,30 @@ describe('fairness', () => {
       log.push('took')
     }).then(() => assert.deepEqual(log, ['put', 'took']))
   })
+})
+
+describe('using a strict buffer with non-zero capacity', () => {
+  it('lets you successfully put n times without any takers', () => {
+    const ch = chan(strictBuffer(2))
+    return pogo(function*() {
+      yield put(ch, 1)
+      yield put(ch, 2)
+      assert.ok('we made it!')
+    })
+  })
+
+  it('makes puters wait after the nth put though', () => {
+    const ch = chan(strictBuffer(2))
+    return pogo(function*() {
+      yield put(ch, 1)
+      yield put(ch, 2)
+      const r = yield race([sleep(10), put(ch, 3)])
+      assert.equal(r, undefined)
+    })
+  })
+})
+
+describe('using a sliding buffer', () => {
+  it('ensures that puts always succeed right away')
+  it('drops the oldest puts once the buffer fills up')
 })

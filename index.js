@@ -71,59 +71,78 @@ class Race {
 pogo.race = ops => new Race(ops)
 
 class Channel {
-  constructor() {
+  constructor(buf) {
     this.takings = []
-    this.putings = []
+    this.putings = buf || new Buffer(0)
   }
 
-  put(puter, val) {
+  _take(taker, ok, notOk) {
+    if (taker.finished) return notOk()
+
     this._disqualifySlowRacers()
-    return this._tradePromise(puter, this.takings, this.putings, val)
-  }
-  putAsync(val, cb) {
-    this._disqualifySlowRacers()
-    this._tradeAsync(this.takings, this.putings, cb, val)
-  }
-  take(taker) {
-    this._disqualifySlowRacers()
-    return this._tradePromise(taker, this.putings, this.takings)
-  }
-  takeAsync(cb) {
-    this._disqualifySlowRacers()
-    this._tradeAsync(this.putings, this.takings, cb)
+    if (!this.putings.empty()) {
+      const puting = this.putings.shift()
+      if (puting.alreadyResumed) return ok(puting.value)
+      if (puting.puter.finished !== undefined) puting.puter.finished = true
+      puting.ok()
+
+      if (taker.finished !== undefined) taker.finished = true
+      ok(puting.value)
+    } else {
+      this.takings.push({taker, ok, notOk})
+    }
   }
 
-  _tradePromise(us, them, queue, val) {
-    return new Promise((ok, notOk) => {
-      if (us.finished) return notOk()
-      if (!them.length) return queue.push({doer: us, ok, notOk, val})
-      this._exchange(us, them, ok, val)
-    })
+  _put(puter, value, ok, notOk) {
+    if (puter.finished) return notOk()
+
+    this._disqualifySlowRacers()
+    if (this.takings.length) {
+      const taking = this.takings.shift()
+      if (taking.taker.finished !== undefined) taking.taker.finished = true
+      taking.ok(value)
+      if (puter.finished !== undefined) puter.finished = true
+      ok()
+    } else if (this.putings.underCapacity()) {
+      this.putings.push({value, alreadyResumed: true})
+      ok()
+    } else {
+      this.putings.push({puter, ok, notOk, value})
+    }
   }
-  _tradeAsync(them, queue, ok = (() => {}), val) {
-    if (!them.length) return queue.push({doer: 'async', ok, val})
-    this._exchange('async', them, ok, val)
-  }
-  _exchange(us, them, ok, val) {
-    const partner = them.shift()
-    if (partner.doer.finished !== undefined) partner.doer.finished = true
-    partner.ok(val)
-    if (us.finished !== undefined) us.finished = true
-    ok(partner.val)
-  }
+
+  put(puter, value) { return new Promise(this._put.bind(this, puter, value)) }
+  putAsync(value, ok) { this._put('async', value, ok) }
+
+  take(taker) { return new Promise(this._take.bind(this, taker)) }
+  takeAsync(ok) { return this._take('async', ok) }
 
   _disqualifySlowRacers() {
     for (let t of this.takings) {
-      if (t.doer.finished) t.notOk()
+      if (t.taker.finished) t.notOk()
     }
-    this.takings = this.takings.filter(t => !t.doer.finished)
+    this.takings = this.takings.filter(t => !t.taker.finished)
     for (let p of this.putings) {
-      if (p.doer.finished) p.notOk()
+      if (!p.alreadyResumed && p.puter.finished) p.notOk()
     }
-    this.putings = this.putings.filter(p => !p.doer.finished)
+    this.putings.filter(p => p.alreadyResumed || !p.puter.finished)
   }
 }
-pogo.chan = () => new Channel()
+pogo.chan = buf => new Channel(buf)
+
+class Buffer {
+  constructor(capacity) {
+    this.capacity = capacity
+    this.buf = []
+  }
+  empty() { return this.buf.length === 0 }
+  underCapacity() { return this.buf.length < this.capacity }
+  push(x) { this.buf.push(x) }
+  shift() { return this.buf.shift() }
+  filter(p) { this.buf = this.buf.filter(p) }
+  [Symbol.iterator]() { return this.buf[Symbol.iterator]() }
+}
+pogo.strictBuffer = capacity => new Buffer(capacity)
 
 const isPromise = x => typeof x.then === 'function'
 const isGen = x => typeof x.next === 'function' && typeof x.throw === 'function'
