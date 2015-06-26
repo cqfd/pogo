@@ -1,7 +1,7 @@
 'use strict';
 
 import { assert } from 'chai'
-import pogo, { chan, put, race, strictBuffer } from '../index.js'
+import pogo, { chan, put, race, slidingBuffer, strictBuffer } from '../index.js'
 
 const wtf = x => console.log('wtf', x)
 const sleep = ms => new Promise(awaken => setTimeout(awaken, ms))
@@ -268,6 +268,13 @@ describe('using a strict buffer with non-zero capacity', () => {
 })
 
 describe('using a sliding buffer', () => {
-  it('ensures that puts always succeed right away')
-  it('drops the oldest puts once the buffer fills up')
+  it('works', () => {
+    const ch = chan(slidingBuffer(1))
+    return pogo(function*() {
+      yield put(ch, 1)
+      yield put(ch, 2)
+      yield put(ch, 3)
+      assert.equal(yield ch, 3)
+    })
+  })
 })

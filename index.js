@@ -144,5 +144,14 @@ class Buffer {
 }
 pogo.strictBuffer = capacity => new Buffer(capacity)
 
+class SlidingBuffer extends Buffer {
+  underCapacity() { return true }
+  push(x) {
+    if (this.buf.length >= this.capacity) this.buf.shift()
+    this.buf.push(x)
+  }
+}
+pogo.slidingBuffer = capacity => new SlidingBuffer(capacity)
+
 const isPromise = x => typeof x.then === 'function'
 const isGen = x => typeof x.next === 'function' && typeof x.throw === 'function'
