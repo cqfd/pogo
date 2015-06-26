@@ -19,6 +19,15 @@ describe('raising an exception', () => {
       throw 'bang!'
     }).catch(e => assert.equal(e, 'bang!'))
   })
+  it("rejects the pogo's promise even after a yield", () => {
+    return pogo(function*() {
+      const msg = yield Promise.resolve('bang')
+      let exclamation
+      try { yield Promise.reject('!') }
+      catch (e) { exclamation = e }
+      throw msg + exclamation
+    }).catch(e => assert.equal(e, 'bang!'))
+  })
 })
 
 describe('yielding a promise', () => {

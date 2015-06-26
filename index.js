@@ -6,8 +6,14 @@ export default function pogo(star, args) {
   return new Promise((ok, notOk) => {
     bounce()
 
-    function bounce(input) { decode(gen.next(input)) }
-    function toss(error) { decode(gen.throw(error)) }
+    function bounce(input) {
+      try { decode(gen.next(input)) }
+      catch (e) { notOk(e) }
+    }
+    function toss(error) {
+      try { decode(gen.throw(error)) }
+      catch (e) { notOk(e) }
+    }
 
     function decode(output) {
       if (output.done) return ok(output.value)
