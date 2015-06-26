@@ -7,12 +7,16 @@ export default function pogo(star, args) {
     bounce()
 
     function bounce(input) {
-      try { decode(gen.next(input)) }
+      let output
+      try { output = gen.next(input) }
       catch (e) { notOk(e) }
+      decode(output)
     }
     function toss(error) {
-      try { decode(gen.throw(error)) }
+      let output
+      try { output = gen.throw(error) }
       catch (e) { notOk(e) }
+      decode(output)
     }
 
     function decode(output) {
