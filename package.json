@@ -8,14 +8,20 @@
     "type": "git",
     "url": "https://github.com/happy4crazy/po-go"
   },
+  "main": "build/index.js",
   "devDependencies": {
     "chai": "*",
     "mocha": "*",
     "babel": "*",
     "babel-runtime": "*"
   },
+  "dependencies": {
+    "gulp": "*",
+    "gulp-babel": "*"
+  },
   "scripts": {
-    "test": "mocha --compilers js:babel/register"
+    "test": "mocha --compilers js:babel/register",
+    "postinstall": "gulp"
   },
   "license": "MIT"
 }
