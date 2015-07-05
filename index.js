@@ -9,13 +9,13 @@ export default function pogo(star, args) {
     function bounce(input) {
       let output
       try { output = gen.next(input) }
-      catch (e) { notOk(e) }
+      catch (e) { return notOk(e) }
       decode(output)
     }
     function toss(error) {
       let output
       try { output = gen.throw(error) }
-      catch (e) { notOk(e) }
+      catch (e) { return notOk(e) }
       decode(output)
     }
 
