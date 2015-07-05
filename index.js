@@ -116,10 +116,10 @@ class Channel {
   }
 
   put(puter, value) { return new Promise(this._put.bind(this, puter, value)) }
-  putAsync(value, ok) { this._put('async', value, ok) }
+  putAsync(value, ok = noOp) { this._put('async', value, ok) }
 
   take(taker) { return new Promise(this._take.bind(this, taker)) }
-  takeAsync(ok) { return this._take('async', ok) }
+  takeAsync(ok = noOp) { return this._take('async', ok) }
 
   _disqualifySlowRacers() {
     for (let t of this.takings) {
@@ -159,3 +159,4 @@ pogo.slidingBuffer = capacity => new SlidingBuffer(capacity)
 
 const isPromise = x => typeof x.then === 'function'
 const isGen = x => typeof x.next === 'function' && typeof x.throw === 'function'
+const noOp = () => {}
