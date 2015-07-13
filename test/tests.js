@@ -218,6 +218,25 @@ describe('puting and taking from the same channel', () => {
   })
 })
 
+describe('pogos within pogos', () => {
+  it('works', (done) => {
+    return pogo(function*() {
+      const ch = chan()
+      pogo(function*() {
+        for (let i = 0; i < 10; i++) {
+          yield put(ch, i)
+        }
+      }).catch(done)
+      pogo(function*() {
+        for (let i = 0; i < 10; i++) {
+          assert.equal(yield ch, i)
+        }
+        done()
+      }).catch(done)
+    })
+  })
+})
+
 describe('fairness', () => {
   it('works for a take and then a put', () => {
     const log = []
