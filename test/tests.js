@@ -1,7 +1,7 @@
 'use strict'
 
 import { assert } from 'chai'
-import pogo, { chan, put, race, slidingBuffer, strictBuffer } from '../index.js'
+import pogo, { chan, put, race, slidingBuffer, strictBuffer } from '../src/index.js'
 
 const wtf = x => console.log('wtf', x)
 const sleep = ms => new Promise(awaken => setTimeout(awaken, ms))
