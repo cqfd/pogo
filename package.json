@@ -13,15 +13,13 @@
     "chai": "*",
     "mocha": "*",
     "babel": "*",
-    "babel-runtime": "*"
-  },
-  "dependencies": {
+    "babel-runtime": "*",
     "gulp": "*",
     "gulp-babel": "*"
   },
   "scripts": {
     "test": "mocha --compilers js:babel/register",
-    "postinstall": "gulp"
+    "prepublish": "gulp"
   },
   "license": "MIT"
 }
