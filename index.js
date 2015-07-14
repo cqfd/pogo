@@ -1,22 +1,7 @@
 'use strict'
 
 import { Channel } from './channels'
-export { chan, strictBuffer, slidingBuffer } from './channels'
-
-class Put {
-  constructor(ch, val) {
-    this.ch = ch
-    this.val = val
-  }
-}
-export const put = (ch, val) => new Put(ch, val)
-
-class Race {
-  constructor(ops) {
-    this.ops = ops
-  }
-}
-export const race = ops => new Race(ops)
+import { Put, Race } from './ops'
 
 /*
  * pogo : *r -> promise r
@@ -86,3 +71,6 @@ function isPromise(x) { return typeof x.then === 'function' }
 function isGen(x) {
   return typeof x.next === 'function' && typeof x.throw === 'function'
 }
+
+export { chan, strictBuffer, slidingBuffer } from './channels'
+export { put, race } from './ops'
