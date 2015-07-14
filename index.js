@@ -161,6 +161,8 @@ class SlidingBuffer extends Buffer {
 }
 pogo.slidingBuffer = capacity => new SlidingBuffer(capacity)
 
-const isPromise = x => typeof x.then === 'function'
-const isGen = x => typeof x.next === 'function' && typeof x.throw === 'function'
-const noOp = () => {}
+function isPromise(x) { return typeof x.then === 'function' }
+function isGen(x) {
+  return typeof x.next === 'function' && typeof x.throw === 'function'
+}
+function noOp() {}
