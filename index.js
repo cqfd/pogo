@@ -24,12 +24,12 @@ export default function pogo(genOrStar, ...args) {
     }
 
     function decode(output) {
-      if (output.done) return ok(output.value)
+      if (output.done) { return ok(output.value) }
 
       const instr = output.value
-      if (isPromise(instr)) return instr.then(bounce, toss)
-      if (instr instanceof Channel) return instr.take(gen).then(bounce)
-      if (instr instanceof Put) return instr.ch.put(gen, instr.val).then(bounce)
+      if (isPromise(instr)) { return instr.then(bounce, toss) }
+      if (instr instanceof Channel) { return instr.take(gen).then(bounce) }
+      if (instr instanceof Put) { return instr.ch.put(gen, instr.val).then(bounce) }
       if (instr instanceof Race) {
         const race = { finished: false }
         return instr.ops.forEach(op => {
@@ -44,7 +44,7 @@ export default function pogo(genOrStar, ...args) {
             op.ch.put(race, op.val).then(() => bounce({ channel: op }))
           }
           if (isGen(op)) {
-            if (!cachedPromisifications.has(op)) cachedPromisifications.set(op, pogo(op))
+            if (!cachedPromisifications.has(op)) { cachedPromisifications.set(op, pogo(op)) }
             cachedPromisifications.get(op).then(i => {
               if (!race.finished) { race.finished = true; bounce(i) }
             }, e => {
@@ -54,7 +54,7 @@ export default function pogo(genOrStar, ...args) {
         })
       }
       if (isGen(instr)) {
-        if (!cachedPromisifications.has(instr)) cachedPromisifications.set(instr, pogo(instr))
+        if (!cachedPromisifications.has(instr)) { cachedPromisifications.set(instr, pogo(instr)) }
         return cachedPromisifications.get(instr).then(bounce, toss)
       }
 
