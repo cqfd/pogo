@@ -58,7 +58,7 @@ export default function pogo(genOrStar, ...args) {
         return cachedPromisifications.get(instr).then(bounce, toss)
       }
 
-      notOk(new Error("Invalid yield instruction: " + instr + "."))
+      notOk(new Error(`Invalid yield instruction: ${instr}.`))
     }
   })
 }
