@@ -27,15 +27,15 @@ export default function pogo(genOrStar, ...args) {
     }
 
     function decode(output) {
-      if (output.done) { return ok(output.value) }
+      if (output.done) { ok(output.value); return }
 
       const instr = output.value
-      if (isPromise(instr)) { return instr.then(bounce, toss) }
-      if (instr instanceof Channel) { return instr.take(gen).then(bounce) }
-      if (instr instanceof Put) { return instr.ch.put(gen, instr.val).then(bounce) }
+      if (isPromise(instr)) { instr.then(bounce, toss); return }
+      if (instr instanceof Channel) { instr.take(gen).then(bounce); return }
+      if (instr instanceof Put) { instr.ch.put(gen, instr.val).then(bounce); return }
       if (instr instanceof Race) {
         const race = { finished: false }
-        return instr.ops.forEach(op => {
+        instr.ops.forEach(op => {
           if (isPromise(op)) {
             op.then(i => { if (!race.finished) { race.finished = true; bounce(i) } },
                     e => { if (!race.finished) { race.finished = true; toss(e) } })
@@ -55,10 +55,12 @@ export default function pogo(genOrStar, ...args) {
             })
           }
         })
+        return
       }
       if (isGen(instr)) {
         if (!cachedPromisifications.has(instr)) { cachedPromisifications.set(instr, pogo(instr)) }
-        return cachedPromisifications.get(instr).then(bounce, toss)
+        cachedPromisifications.get(instr).then(bounce, toss)
+        return
       }
 
       notOk(new Error(`Invalid yield instruction: ${instr}.`))
