@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 import { assert } from 'chai'
 import pogo, { chan, put, race, slidingBuffer, strictBuffer } from '../index.js'
@@ -203,12 +203,12 @@ describe('puting and taking from the same channel', () => {
     pogo(function*() {
       const ping = yield ch
       log.push('received ' + ping)
-      yield pogo.put(ch, 'pong')
+      yield put(ch, 'pong')
       log.push('sent pong')
     }).catch(wtf)
 
     return pogo(function*() {
-      yield pogo.put(ch, 'ping')
+      yield put(ch, 'ping')
       log.push('sent ping')
       const pong = yield ch
       log.push('received ' + pong)
