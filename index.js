@@ -6,7 +6,7 @@
  */
 export default function pogo(genOrStar, ...args) {
   const gen = isGen(genOrStar) ? genOrStar : genOrStar(...args)
-  const cachedPromisifications = new WeakMap
+  const cachedPromisifications = new WeakMap()
   return new Promise((ok, notOk) => {
     bounce()
 
