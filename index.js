@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 /*
  * pogo : *r -> promise r
@@ -13,13 +13,13 @@ export default function pogo(genOrStar, ...args) {
     function bounce(input) {
       let output
       try { output = gen.next(input) }
-      catch (e) { return notOk(e) }
+      catch (e) { notOk(e); return }
       decode(output)
     }
     function toss(error) {
       let output
       try { output = gen.throw(error) }
-      catch (e) { return notOk(e) }
+      catch (e) { notOk(e); return }
       decode(output)
     }
 
