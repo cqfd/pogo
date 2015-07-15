@@ -286,8 +286,8 @@ describe('a strict buffer with non-zero capacity', () => {
   })
 })
 
-describe('using a ring buffer', () => {
-  it('works', () => {
+describe('a ring buffer', () => {
+  it('drops old puts', () => {
     const ch = chan(ringBuffer(1))
     return pogo(function*() {
       yield put(ch, 1)
