@@ -284,6 +284,24 @@ describe('a strict buffer with non-zero capacity', () => {
       assert.equal(r, undefined)
     })
   })
+
+  it("resumes pending puters once there's room in the buffer", (done) => {
+    const ch = chan(strictBuffer(1))
+    const log = []
+    pogo(function*(){
+      yield sleep(10)
+      assert.equal(1, yield ch)
+      log.push('took 1')
+      assert.deepEqual(log, ['put 1', 'put 2', 'took 1'])
+    }).then(done, done)
+    pogo(function*() {
+      yield put(ch, 1)
+      log.push('put 1')
+      yield put(ch, 2)
+      log.push('put 2')
+      assert.deepEqual(log, ['put 1', 'put 2'])
+    }).catch(done)
+  })
 })
 
 describe('a ring buffer', () => {
