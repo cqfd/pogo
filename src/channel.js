@@ -16,7 +16,6 @@ export default class Channel {
 
     const bufferedPuting = this.bufferedPutings.remove()
     if (bufferedPuting) {
-      console.log('bufferedPuting', bufferedPuting)
       if (bufferedPuting.puter.finished !== undefined) {
         bufferedPuting.puter.finished = true
       }
