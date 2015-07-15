@@ -1,7 +1,8 @@
 'use strict'
 
-import { Channel } from './channels'
+import Channel from './channel'
 import { Put, Race } from './ops'
+import { StrictBuffer, RingBuffer } from './buffers'
 
 /*
  * pogo : *r -> promise r
@@ -68,11 +69,13 @@ export default function pogo(genOrStar, ...args) {
   })
 }
 
+export const chan = buf => new Channel(buf)
+export const put = (ch, val) => new Put(ch, val)
+export const race = ops => new Race(ops)
+export const strictBuffer = capacity => new StrictBuffer(capacity)
+export const ringBuffer = capacity => new RingBuffer(capacity)
 
 function isPromise(x) { return typeof x.then === 'function' }
 function isGen(x) {
   return typeof x.next === 'function' && typeof x.throw === 'function'
 }
-
-export { chan, strictBuffer, slidingBuffer } from './channels'
-export { put, race } from './ops'

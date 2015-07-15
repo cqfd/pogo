@@ -1,7 +1,7 @@
 'use strict'
 
 import { assert } from 'chai'
-import pogo, { chan, put, race, slidingBuffer, strictBuffer } from '../src/index.js'
+import pogo, { chan, put, race, ringBuffer, strictBuffer } from '../src/index.js'
 
 const wtf = x => console.log('wtf', x)
 const sleep = ms => new Promise(awaken => setTimeout(awaken, ms))
@@ -265,7 +265,7 @@ describe('fairness', () => {
   })
 })
 
-describe('using a strict buffer with non-zero capacity', () => {
+describe('a strict buffer with non-zero capacity', () => {
   it('lets you successfully put n times without any takers', () => {
     const ch = chan(strictBuffer(2))
     return pogo(function*() {
@@ -286,9 +286,9 @@ describe('using a strict buffer with non-zero capacity', () => {
   })
 })
 
-describe('using a sliding buffer', () => {
+describe('using a ring buffer', () => {
   it('works', () => {
-    const ch = chan(slidingBuffer(1))
+    const ch = chan(ringBuffer(1))
     return pogo(function*() {
       yield put(ch, 1)
       yield put(ch, 2)
