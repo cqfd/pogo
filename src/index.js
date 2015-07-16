@@ -38,19 +38,19 @@ export default function pogo(genOrStar, ...args) {
         const race = { finished: false }
         instr.ops.forEach(op => {
           if (isPromise(op)) {
-            op.then(i => { if (!race.finished) { race.finished = true; bounce(i) } },
+            op.then(i => { if (!race.finished) { race.finished = true; bounce({winner: op, value: i}) } },
                     e => { if (!race.finished) { race.finished = true; toss(e) } })
           }
           if (op instanceof Channel) {
-            op.take(race).then(i => bounce({ value: i, channel: op }))
+            op.take(race).then(i => bounce({ winner: op, value: i }))
           }
           if (op instanceof Put) {
-            op.ch.put(race, op.val).then(() => bounce({ channel: op }))
+            op.ch.put(race, op.val).then(() => bounce({ winner: op }))
           }
           if (isGen(op)) {
             if (!cachedPromisifications.has(op)) { cachedPromisifications.set(op, pogo(op)) }
             cachedPromisifications.get(op).then(i => {
-              if (!race.finished) { race.finished = true; bounce(i) }
+              if (!race.finished) { race.finished = true; bounce({winner: op, value: i}) }
             }, e => {
               if (!race.finished) { race.finished = true; toss(e) }
             })

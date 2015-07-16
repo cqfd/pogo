@@ -68,8 +68,8 @@ describe('yielding a put or a take', () => {
 describe('race', () => {
   it('works with promises', () => {
     return pogo(function*() {
-      const ret = yield race([sleep(1000), Promise.resolve('woot')])
-      assert.equal(ret, 'woot')
+      const {winner, value} = yield race([sleep(1000), Promise.resolve('woot')])
+      assert.equal(value, 'woot')
     })
   })
 
@@ -86,15 +86,15 @@ describe('race', () => {
     }).catch(wtf)
 
     return pogo(function*() {
-      const r1 = yield race([ch1, ch2])
+      var {winner, value} = yield race([ch1, ch2])
       log.push('alted')
-      assert.equal(r1.channel, ch1)
-      assert.equal(r1.value, 'first')
+      assert.equal(winner, ch1)
+      assert.equal(value, 'first')
 
-      const r2 = yield race([ch1, ch2])
+      var {winner, value} = yield race([ch1, ch2])
       log.push('alted')
-      assert.equal(r2.channel, ch2)
-      assert.equal(r2.value, 'deuxieme')
+      assert.equal(winner, ch2)
+      assert.equal(value, 'deuxieme')
 
       assert.deepEqual(log, ['put first', 'alted', 'put deuxieme', 'alted'])
     })
@@ -133,9 +133,9 @@ describe('yielding a generator function', () => {
     }
     return pogo(function*() {
       const gen = star(123)
-      assert.equal(123, yield race([gen, Promise.resolve(123)]))
-      assert.equal(456, yield race([gen, Promise.resolve(456)]))
-      assert.deepEqual(yield race([gen, Promise.resolve(789)]), [123, 'foo', 'bar'])
+      assert.equal(123, (yield race([gen, Promise.resolve(123)])).value)
+      assert.equal(456, (yield race([gen, Promise.resolve(456)])).value)
+      assert.deepEqual((yield race([gen, Promise.resolve(789)])).value, [123, 'foo', 'bar'])
     })
   })
 })
@@ -280,8 +280,8 @@ describe('a strict buffer with non-zero capacity', () => {
     return pogo(function*() {
       yield put(ch, 1)
       yield put(ch, 2)
-      const r = yield race([sleep(10), put(ch, 3)])
-      assert.equal(r, undefined)
+      const {value} = yield race([sleep(10), put(ch, 3)])
+      assert.equal(value, undefined)
     })
   })
 
